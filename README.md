@@ -5,7 +5,7 @@ Go client for the ModelSocket protocol - WebSocket-based LLM integration with st
 ## Install
 
 ```bash
-go get github.com/mixlayer/modelsocket-go
+go get github.com/chrisboulton/modelsocket-go
 ```
 
 Requires Go 1.23+.
@@ -82,10 +82,18 @@ weatherTool := modelsocket.NewFuncTool(
 toolbox := modelsocket.NewToolbox()
 toolbox.Add(weatherTool)
 
+// Optionally, you can customize the tool call instructions - what informs the
+// model how to format tool calls. You should pretty much never need to do this
+// toolbox.SetToolInstructions("....")
+
+// You can also bring your own presenter for decorating tool definitions when
+// passed into the model. It's up to you to ensure all tools with their definitions
+// are listed.
+// toolbox.SetToolDefinitionPrompt("You have access to the following)
+
 // Open sequence with tools
 seq, _ := client.Open(ctx, model,
     modelsocket.WithToolbox(toolbox),
-    modelsocket.WithToolPrompt(toolbox.ToolDefPrompt()),
 )
 
 // Handle tool calls in stream
@@ -100,12 +108,3 @@ for chunk, err := range stream.Chunks(ctx) {
     }
 }
 ```
-
-## API
-
-| Type | Description |
-|------|-------------|
-| `Client` | Connection - Connect(), Open(), Close() |
-| `Seq` | Sequence - Append(), Generate(), Fork(), Close() |
-| `GenStream` | Stream - Next(), Chunks(), Text() |
-| `Toolbox` | Tool registry - Add(), Call(), CallTools() |

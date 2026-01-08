@@ -33,10 +33,10 @@ type MSRequest struct {
 
 // SeqOpenData is the data for a seq_open request.
 type SeqOpenData struct {
-	Model        string  `json:"model"`
-	ToolsEnabled bool    `json:"tools_enabled,omitempty"`
-	ToolPrompt   *string `json:"tool_prompt,omitempty"`
-	SkipPrelude  bool    `json:"skip_prelude,omitempty"`
+	Model        string `json:"model"`
+	ToolsEnabled bool   `json:"tools_enabled,omitempty"`
+	ToolPrompt   string `json:"tool_prompt,omitempty"`
+	SkipPrelude  bool   `json:"skip_prelude,omitempty"`
 }
 
 // SeqAppendData is the data for an append command.

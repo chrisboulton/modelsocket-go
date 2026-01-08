@@ -1,4 +1,4 @@
-module github.com/mixlayer/modelsocket-go
+module github.com/chrisboulton/modelsocket-go
 
 go 1.23
 

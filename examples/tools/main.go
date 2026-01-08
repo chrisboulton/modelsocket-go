@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mixlayer/modelsocket-go"
+	"github.com/chrisboulton/modelsocket-go"
 )
 
 // WeatherArgs is the input for the weather tool.
@@ -102,7 +102,6 @@ func main() {
 	fmt.Printf("Opening sequence with model %s and tools...\n", model)
 	seq, err := client.Open(ctx, model,
 		modelsocket.WithToolbox(toolbox),
-		modelsocket.WithToolPrompt(toolbox.ToolDefPrompt()),
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to open sequence: %v\n", err)

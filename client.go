@@ -84,15 +84,13 @@ func (c *Client) Open(ctx context.Context, model string, opts ...OpenOption) (*S
 
 	// Build the request
 	data := SeqOpenData{
-		Model: model,
+		Model:        model,
+		SkipPrelude:  cfg.skipPrelude,
+		ToolsEnabled: cfg.toolbox != nil,
 	}
 
-	if cfg.toolPrompt != "" {
-		data.ToolPrompt = &cfg.toolPrompt
-	}
-	data.SkipPrelude = cfg.skipPrelude
-	if cfg.toolbox != nil {
-		data.ToolsEnabled = true
+	if cfg.toolbox != nil && cfg.toolbox.toolInstructions != "" {
+		data.ToolPrompt = cfg.toolbox.toolInstructions
 	}
 
 	req := NewSeqOpenRequest(cid, data)
@@ -125,6 +123,13 @@ func (c *Client) Open(ctx context.Context, model string, opts ...OpenOption) (*S
 		c.mu.Lock()
 		c.seqs[seq.id] = seq
 		c.mu.Unlock()
+
+		// If a toolbox is configured with instructions, send them as a system message
+		if cfg.toolbox != nil && cfg.toolbox.ToolInstructions() != "" {
+			if err := seq.Append(ctx, cfg.toolbox.ToolInstructions(), AsSystem()); err != nil {
+				return nil, err
+			}
+		}
 
 		return seq, nil
 	}

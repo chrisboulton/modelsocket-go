@@ -136,15 +136,6 @@ func TestAppendOption_Echo(t *testing.T) {
 	}
 }
 
-func TestOpenOption_ToolPrompt(t *testing.T) {
-	cfg := openConfig{}
-	WithToolPrompt("Use tools wisely")(&cfg)
-
-	if cfg.toolPrompt != "Use tools wisely" {
-		t.Errorf("toolPrompt = %s, want Use tools wisely", cfg.toolPrompt)
-	}
-}
-
 func TestOpenOption_SkipPrelude(t *testing.T) {
 	cfg := openConfig{}
 	WithSkipPrelude()(&cfg)

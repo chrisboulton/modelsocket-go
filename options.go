@@ -40,16 +40,8 @@ func WithOnReceive(fn func(*MSEvent)) ClientOption {
 type OpenOption func(*openConfig)
 
 type openConfig struct {
-	toolPrompt  string
 	skipPrelude bool
 	toolbox     *Toolbox
-}
-
-// WithToolPrompt sets the system prompt describing available tools.
-func WithToolPrompt(prompt string) OpenOption {
-	return func(c *openConfig) {
-		c.toolPrompt = prompt
-	}
 }
 
 // WithSkipPrelude skips the model's default prelude/system prompt.

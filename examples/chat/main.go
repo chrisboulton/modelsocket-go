@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mixlayer/modelsocket-go"
+	"github.com/chrisboulton/modelsocket-go"
 )
 
 func main() {

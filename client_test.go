@@ -131,6 +131,7 @@ func TestClient_Open_WithOpts(t *testing.T) {
 	defer client.Close(ctx)
 
 	go func() {
+		// Handle seq_open request
 		req := transport.waitForRequest(t, time.Second)
 		if req.Request == "seq_open" {
 			transport.pushEvent(&MSEvent{
@@ -139,11 +140,20 @@ func TestClient_Open_WithOpts(t *testing.T) {
 				SeqID: "seq-456",
 			})
 		}
+		// Handle system prompt append request
+		req = transport.waitForRequest(t, time.Second)
+		if req.Request == "seq_command" {
+			transport.pushEvent(&MSEvent{
+				Event: "seq_append_finish",
+				CID:   req.CID,
+				SeqID: "seq-456",
+			})
+		}
 	}()
 
 	toolbox := NewToolbox()
+	toolbox.SetToolInstructions("Use tools wisely")
 	seq, err := client.Open(ctx, "test-model",
-		WithToolPrompt("Use tools wisely"),
 		WithSkipPrelude(),
 		WithToolbox(toolbox),
 	)
@@ -151,30 +161,43 @@ func TestClient_Open_WithOpts(t *testing.T) {
 		t.Fatalf("Open error: %v", err)
 	}
 
-	// Verify request was sent correctly
+	// Verify requests were sent correctly
 	reqs := transport.getRequests()
-	if len(reqs) == 0 {
-		t.Fatal("no requests sent")
+	if len(reqs) < 2 {
+		t.Fatalf("expected 2 requests, got %d", len(reqs))
 	}
 
-	req := reqs[0]
-	if req.Request != "seq_open" {
-		t.Errorf("Request = %s, want seq_open", req.Request)
+	// Check seq_open request
+	openReq := reqs[0]
+	if openReq.Request != "seq_open" {
+		t.Errorf("Request = %s, want seq_open", openReq.Request)
 	}
 
-	// Check data
-	data := req.Data.(SeqOpenData)
+	data := openReq.Data.(SeqOpenData)
 	if data.Model != "test-model" {
 		t.Errorf("Model = %s, want test-model", data.Model)
 	}
 	if !data.ToolsEnabled {
 		t.Error("ToolsEnabled = false, want true")
 	}
-	if data.ToolPrompt == nil || *data.ToolPrompt != "Use tools wisely" {
-		t.Error("ToolPrompt not set correctly")
-	}
 	if !data.SkipPrelude {
 		t.Error("SkipPrelude = false, want true")
+	}
+
+	// Check system prompt append request
+	appendReq := reqs[1]
+	if appendReq.Request != "seq_command" {
+		t.Errorf("Request = %s, want seq_command", appendReq.Request)
+	}
+	appendData := appendReq.Data.(appendCommandData)
+	if appendData.Command != "append" {
+		t.Errorf("Command = %s, want append", appendData.Command)
+	}
+	if appendData.Text != "Use tools wisely" {
+		t.Errorf("Text = %s, want 'Use tools wisely'", appendData.Text)
+	}
+	if appendData.Role != string(RoleSystem) {
+		t.Errorf("Role = %s, want system", appendData.Role)
 	}
 
 	if seq.toolbox != toolbox {

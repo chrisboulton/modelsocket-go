@@ -36,8 +36,10 @@ type ToolProperty struct {
 
 // Toolbox manages a collection of tools.
 type Toolbox struct {
-	mu    sync.RWMutex
-	tools map[string]Tool
+	mu                   sync.RWMutex
+	tools                map[string]Tool
+	toolInstructions     string
+	toolDefinitionPrompt string
 }
 
 // NewToolbox creates an empty toolbox.
@@ -103,8 +105,26 @@ func (t *Toolbox) Definitions() []ToolDefinition {
 	return defs
 }
 
-// ToolDefPrompt generates a system prompt describing all tools.
-func (t *Toolbox) ToolDefPrompt() string {
+func (t *Toolbox) SetToolInstructions(instructions string) {
+	t.toolInstructions = instructions
+}
+
+// ToolInstructions returns the tool instructions.
+func (t *Toolbox) ToolInstructions() string {
+	return t.toolInstructions
+}
+
+func (t *Toolbox) SetToolDefinitionPrompt(prompt string) {
+	t.toolDefinitionPrompt = prompt
+}
+
+// ToolPrompt returns the tool prompt. If a custom prompt was set via SetToolPrompt,
+// it returns that; otherwise it returns an auto-generated prompt describing all tools.
+func (t *Toolbox) ToolDefinitionPrompt() string {
+	if t.toolDefinitionPrompt != "" {
+		return t.toolDefinitionPrompt
+	}
+
 	defs := t.Definitions()
 	if len(defs) == 0 {
 		return ""
@@ -112,6 +132,7 @@ func (t *Toolbox) ToolDefPrompt() string {
 
 	data, _ := json.MarshalIndent(defs, "", "  ")
 	return fmt.Sprintf("You have access to the following tools:\n\n%s\n\nTo use a tool, respond with a tool call in the appropriate format.", string(data))
+
 }
 
 // FuncTool wraps a function as a Tool.

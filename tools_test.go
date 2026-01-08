@@ -206,7 +206,7 @@ func TestToolbox_ToolDefPrompt(t *testing.T) {
 		func(ctx context.Context, args string) (string, error) { return "", nil },
 	))
 
-	prompt := tb.ToolDefPrompt()
+	prompt := tb.ToolDefinitionPrompt()
 
 	if !strings.Contains(prompt, "get_weather") {
 		t.Error("prompt should contain tool name")
@@ -216,10 +216,10 @@ func TestToolbox_ToolDefPrompt(t *testing.T) {
 	}
 }
 
-func TestToolbox_ToolDefPrompt_Empty(t *testing.T) {
+func TestToolbox_ToolPrompt_Empty(t *testing.T) {
 	tb := NewToolbox()
 
-	prompt := tb.ToolDefPrompt()
+	prompt := tb.ToolDefinitionPrompt()
 	if prompt != "" {
 		t.Errorf("prompt = %s, want empty", prompt)
 	}
