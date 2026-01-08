@@ -152,7 +152,7 @@ func TestClient_Open_WithOpts(t *testing.T) {
 	}()
 
 	toolbox := NewToolbox()
-	toolbox.SetToolInstructions("Use tools wisely")
+	toolbox.SetToolDefinitionPrompt("Use tools wisely")
 	seq, err := client.Open(ctx, "test-model",
 		WithSkipPrelude(),
 		WithToolbox(toolbox),

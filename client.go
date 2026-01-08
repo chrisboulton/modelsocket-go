@@ -125,8 +125,8 @@ func (c *Client) Open(ctx context.Context, model string, opts ...OpenOption) (*S
 		c.mu.Unlock()
 
 		// If a toolbox is configured with instructions, send them as a system message
-		if cfg.toolbox != nil && cfg.toolbox.ToolInstructions() != "" {
-			if err := seq.Append(ctx, cfg.toolbox.ToolInstructions(), AsSystem()); err != nil {
+		if cfg.toolbox != nil {
+			if err := seq.Append(ctx, cfg.toolbox.ToolDefinitionPrompt(), AsSystem()); err != nil {
 				return nil, err
 			}
 		}
