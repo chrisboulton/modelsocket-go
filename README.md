@@ -38,12 +38,72 @@ for chunk, err := range stream.Chunks(ctx) {
 }
 ```
 
-## Features
+## Client
 
-- **Streaming generation** - Token-by-token output via iterator or Next()
-- **Tool calling** - Register tools with Toolbox, handle ToolCall events
-- **Sequence forking** - Branch conversations with `seq.Fork()`
-- **Generation options** - Temperature, top_p, top_k, stop strings, max tokens
+The `Client` manages the WebSocket connection and routes events to sequences. It's safe for concurrent use.
+
+### Client Options
+
+Pass options to `Connect()` to configure the client:
+
+```go
+client, err := modelsocket.Connect(ctx, url, apiKey,
+    modelsocket.WithLogger(slog.Default()),
+    modelsocket.WithOnSend(func(req *modelsocket.MSRequest) {
+        // Called before each request is sent
+    }),
+    modelsocket.WithOnReceive(func(evt *modelsocket.MSEvent) {
+        // Called after each event is received
+    }),
+)
+```
+
+| Option | Description |
+|--------|-------------|
+| `WithLogger(*slog.Logger)` | Structured logger for debug output |
+| `WithOnSend(func(*MSRequest))` | Hook called before sending requests |
+| `WithOnReceive(func(*MSEvent))` | Hook called after receiving events |
+
+### Open Options
+
+Configure sequences when calling `client.Open()`:
+
+```go
+seq, err := client.Open(ctx, "meta/llama3.1-8b-instruct-free",
+    modelsocket.WithSkipPrelude(),
+    modelsocket.WithToolbox(toolbox),
+)
+```
+
+| Option | Description |
+|--------|-------------|
+| `WithSkipPrelude()` | Skip the model's default system prompt |
+| `WithToolbox(*Toolbox)` | Enable tool calling with the provided toolbox |
+
+### Custom Transport
+
+Use `NewWithTransport()` to provide your own transport implementation:
+
+```go
+client := modelsocket.NewWithTransport(ctx, myTransport,
+    modelsocket.WithLogger(logger),
+)
+```
+
+Custom transports must implement the `Transport` interface:
+
+```go
+type Transport interface {
+    Send(ctx context.Context, req *MSRequest) error
+    Receive(ctx context.Context) (*MSEvent, error)
+    Close() error
+}
+```
+
+Use cases for custom transports:
+- **Testing** - Mock transport for unit tests without network calls
+- **Proxying** - Route through a custom proxy or middleware
+- **Alternative protocols** - Use HTTP/SSE or other transports instead of WebSocket
 
 ## Examples
 
